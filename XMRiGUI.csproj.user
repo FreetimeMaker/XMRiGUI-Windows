@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PublishUrlHistory>C:\Users\jamie\source\repos\XMRiGUI\Releases\|Releases\|publish\</PublishUrlHistory>
+    <InstallUrlHistory>https://github.com/FreetimeMaker/XMRiGUI-Windows/releases/latest/</InstallUrlHistory>
+    <SupportUrlHistory>https://github.com/FreetimeMaker/XMRiGUI-Windows/issues</SupportUrlHistory>
+    <UpdateUrlHistory />
+    <BootstrapperUrlHistory />
+    <ErrorReportUrlHistory>https://github.com/FreetimeMaker/XMRiGUI-Windows/issues</ErrorReportUrlHistory>
+    <FallbackCulture>de-DE</FallbackCulture>
+    <VerifyUploadedFiles>false</VerifyUploadedFiles>
+  </PropertyGroup>
+  <PropertyGroup>
+    <EnableSecurityDebugging>false</EnableSecurityDebugging>
+  </PropertyGroup>
+</Project>

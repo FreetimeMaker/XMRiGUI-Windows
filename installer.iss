@@ -30,7 +30,7 @@ Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "XMRiGUI.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Releases\XMRiGUI.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; Include assets
 Source: "xmrigui.ico"; DestDir: "{app}"; Flags: ignoreversion
 ; Include Miners
