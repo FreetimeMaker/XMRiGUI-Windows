@@ -1,0 +1,144 @@
+﻿<Window x:Class="XMRiGUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:XMRiGUI"
+        mc:Ignorable="d"
+        Title="XMRiGUI v1.8.1" Height="650" Width="950" Background="#1E1E1E">
+
+    <Window.Resources>
+        <Style x:Key="HeaderLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#888888"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,10,0,2"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="ProfileSwitch" TargetType="ToggleButton">
+            <Setter Property="Background" Value="#333333"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border" CornerRadius="15" Background="{TemplateBinding Background}">
+                            <Ellipse x:Name="dot" Fill="White" HorizontalAlignment="Left" Margin="2" Width="26" Height="26"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#4CAF50"/>
+                                <Setter TargetName="dot" Property="HorizontalAlignment" Value="Right"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <Border Background="#252526" BorderBrush="#333333" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Margin="20">
+                    <TextBlock Text="XMRiGUI" Foreground="#FF6600" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <ListBox x:Name="SidebarList" Grid.Row="1" Background="Transparent" BorderThickness="0" Margin="0,10" SelectionChanged="SidebarList_SelectionChanged">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="ItemBorder" Padding="20,15" Background="{TemplateBinding Background}">
+                                            <ContentPresenter VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="#37373D"/>
+                                                <Setter Property="Foreground" Value="#FF6600"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="#2A2D2E"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBoxItem Content="Profil 1" Tag="0"/>
+                    <ListBoxItem Content="Profil 2" Tag="1"/>
+                    <ListBoxItem Content="Profil 3" Tag="2"/>
+                    <ListBoxItem Content="Einstellungen" Tag="3" Margin="0,20,0,0"/>
+                </ListBox>
+
+                <TextBlock Grid.Row="2" Text="v1.8.1 (WPF Port)" Foreground="#555555" FontSize="10" Margin="20" HorizontalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Content Area -->
+        <Grid Grid.Column="1" Margin="30">
+            <TabControl x:Name="MainTabs" Background="Transparent" BorderThickness="0">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+
+                <!-- Profile Template (will be handled by logic or repeated) -->
+                <!-- For simplicity in this prompt, I'll repeat it or use a ContentControl.
+                     I'll define the layout for one and bind it. -->
+
+                <TabItem> <!-- Profile 1 -->
+                    <local:ProfileView x:Name="Profile1View" DataContext="{Binding profiles[0]}"/>
+                </TabItem>
+                <TabItem> <!-- Profile 2 -->
+                    <local:ProfileView x:Name="Profile2View" DataContext="{Binding profiles[1]}"/>
+                </TabItem>
+                <TabItem> <!-- Profile 3 -->
+                    <local:ProfileView x:Name="Profile3View" DataContext="{Binding profiles[2]}"/>
+                </TabItem>
+
+                <TabItem> <!-- Global Settings -->
+                    <StackPanel>
+                        <TextBlock Text="EINSTELLUNGEN" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,30"/>
+
+                        <CheckBox Content="Mit Windows starten" Foreground="White" Margin="0,20,0,0" IsChecked="{Binding start_with_windows}"/>
+                        <CheckBox Content="Bei Minimieren in den Tray" Foreground="White" Margin="0,10,0,0" IsChecked="{Binding minimize_to_tray}"/>
+                        <CheckBox Content="Bei Schließen in den Tray" Foreground="White" Margin="0,10,0,0" IsChecked="{Binding close_to_tray}"/>
+
+                        <Button Content="ALLE EINSTELLUNGEN SPEICHERN" Background="#FF6600" Foreground="White" FontWeight="Bold" Height="45" Margin="0,40,0,0" Click="SaveAll_Click" BorderThickness="0">
+                            <Button.Resources>
+                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style>
+                            </Button.Resources>
+                        </Button>
+
+                        <TextBlock Text="Miner-Version (Integriert): 1.8.1" Foreground="#555555" Margin="0,20,0,0" FontSize="12"/>
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Grid>
+</Window>
