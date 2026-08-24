@@ -38,15 +38,30 @@ namespace XMRiGUI
         private void SetupTrayIcon()
         {
             _notifyIcon = new NotifyIcon();
-            _notifyIcon.Icon = SystemIcons.Application; // Replace with app icon later
+            try
+            {
+                if (File.Exists("xmrigui.ico"))
+                {
+                    _notifyIcon.Icon = new Icon("xmrigui.ico");
+                }
+                else
+                {
+                    _notifyIcon.Icon = SystemIcons.Application;
+                }
+            }
+            catch
+            {
+                _notifyIcon.Icon = SystemIcons.Application;
+            }
+
             _notifyIcon.Text = "XMRiGUI Miner";
             _notifyIcon.Visible = true;
             _notifyIcon.DoubleClick += (s, e) => ShowWindow();
 
             var contextMenu = new ContextMenuStrip();
-            contextMenu.Items.Add("Anzeigen", null, (s, e) => ShowWindow());
+            contextMenu.Items.Add("Show", null, (s, e) => ShowWindow());
             contextMenu.Items.Add(new ToolStripSeparator());
-            contextMenu.Items.Add("Beenden", null, (s, e) => ForceExit());
+            contextMenu.Items.Add("Exit", null, (s, e) => ForceExit());
 
             _notifyIcon.ContextMenuStrip = contextMenu;
         }
@@ -56,8 +71,8 @@ namespace XMRiGUI
             string newVersion = await _updateService.CheckForUpdateAsync();
             if (!string.IsNullOrEmpty(newVersion))
             {
-                var result = MessageBox.Show($"Eine neue Version (v{newVersion}) ist verfügbar! Möchtest du zur Download-Seite?",
-                    "Update verfügbar", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                var result = MessageBox.Show($"A new version (v{newVersion}) is available! Do you want to go to the download page?",
+                    "Update Available", MessageBoxButton.YesNo, MessageBoxImage.Information);
 
                 if (result == MessageBoxResult.Yes)
                 {
@@ -166,7 +181,7 @@ namespace XMRiGUI
         private void SaveAll_Click(object sender, RoutedEventArgs e)
         {
             _configService.SaveConfig(_config);
-            MessageBox.Show("Alle Einstellungen wurden in AppData gespeichert.");
+            MessageBox.Show("All settings have been saved to AppData.");
         }
     }
 }

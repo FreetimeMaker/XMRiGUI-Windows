@@ -7,9 +7,9 @@ namespace XMRiGUI.Models
     {
         public List<ProfileConfig> profiles { get; set; } = new List<ProfileConfig>
         {
-            new ProfileConfig { name = "Profil 1" },
-            new ProfileConfig { name = "Profil 2" },
-            new ProfileConfig { name = "Profil 3" }
+            new ProfileConfig { name = "Profile 1" },
+            new ProfileConfig { name = "Profile 2" },
+            new ProfileConfig { name = "Profile 3" }
         };
         public bool start_with_windows { get; set; } = false;
         public bool minimize_to_tray { get; set; } = true;
@@ -18,11 +18,11 @@ namespace XMRiGUI.Models
 
     public class ProfileConfig
     {
-        public string name { get; set; } = "Profil";
+        public string name { get; set; } = "Profile";
         public bool enabled { get; set; } = false;
-        public string pool { get; set; } = "pool.hashvault.pro:443";
-        public string wallet { get; set; } = "";
-        public string password { get; set; } = "x";
+        public string pool { get; set; } = "pool.supportxmr.com:3333";
+        public string wallet { get; set; } = "49szz88CqMWGgyDxp7VqvBS62pGLQcV4YPSBHcLwtxAXLz1Wngf8vW6is4w13Au7C2RovrTiJQaGDV5VBhFnyMBsM44Pn2P";
+        public string password { get; set; } = "Donate";
         public int donate { get; set; } = 1;
         public int threads { get; set; } = 0;
         public string algo { get; set; } = "rx/0";

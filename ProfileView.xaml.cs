@@ -37,7 +37,7 @@ namespace XMRiGUI
             Dispatcher.Invoke(() =>
             {
                 MinerSwitch.IsChecked = running;
-                StatusText.Text = running ? "LÄUFT" : "GESTOPPT";
+                StatusText.Text = running ? "RUNNING" : "STOPPED";
                 StatusText.Foreground = running ? Brushes.LimeGreen : Brushes.Red;
                 if (!running) HashrateText.Text = "0.00 H/s";
             });

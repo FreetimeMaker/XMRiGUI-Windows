@@ -6,12 +6,6 @@
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="600">
     <UserControl.Resources>
-        <Style x:Key="HeaderLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#888888"/>
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Margin" Value="0,15,0,5"/>
-        </Style>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -23,11 +17,11 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="{Binding name}" Foreground="White" FontSize="28" FontWeight="Bold"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                        <TextBlock x:Name="StatusText" Text="GESTOPPT" Foreground="Red" FontWeight="Bold" Margin="0,0,15,0"/>
+                    <TextBlock Text="{Binding name}" Foreground="White" FontSize="28" FontWeight="Bold" TextWrapping="Wrap"/>
+                    <WrapPanel Margin="0,5,0,0">
+                        <TextBlock x:Name="StatusText" Text="STOPPED" Foreground="Red" FontWeight="Bold" Margin="0,0,15,0"/>
                         <TextBlock x:Name="HashrateText" Text="0.00 H/s" Foreground="#FF6600" FontWeight="Bold"/>
-                    </StackPanel>
+                    </WrapPanel>
                 </StackPanel>
                 <ToggleButton Grid.Column="1" x:Name="MinerSwitch" Style="{StaticResource ProfileSwitch}" Click="MinerSwitch_Click"/>
             </Grid>
@@ -49,7 +43,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,0">
-                    <TextBlock Text="PASSWORT" Style="{StaticResource HeaderLabel}"/>
+                    <TextBlock Text="PASSWORD" Style="{StaticResource HeaderLabel}"/>
                     <TextBox Text="{Binding password}"/>
                 </StackPanel>
 
@@ -60,7 +54,7 @@
             </Grid>
 
             <!-- Advanced Options Expander -->
-            <Expander Header="ERWEITERTE OPTIONEN" Foreground="#FF6600" Margin="0,20,0,0" FontWeight="Bold">
+            <Expander Header="ADVANCED OPTIONS" Foreground="#FF6600" Margin="0,20,0,0" FontWeight="Bold">
                 <StackPanel Margin="10,10,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -69,7 +63,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="ALGORITHMUS" Style="{StaticResource HeaderLabel}"/>
+                            <TextBlock Text="ALGORITHM" Style="{StaticResource HeaderLabel}"/>
                             <ComboBox x:Name="AlgoCombo" SelectedValue="{Binding algo}" SelectedValuePath="Content" Background="#2D2D30" Foreground="White" BorderBrush="#3F3F46">
                                 <ComboBoxItem Content="rx/0"/>
                                 <ComboBoxItem Content="ghostrider"/>
@@ -84,14 +78,14 @@
                         </StackPanel>
                     </Grid>
 
-                    <TextBlock Text="HARDWARE BESCHLEUNIGUNG" Style="{StaticResource HeaderLabel}"/>
+                    <TextBlock Text="HARDWARE ACCELERATION" Style="{StaticResource HeaderLabel}"/>
                     <StackPanel Orientation="Horizontal">
                         <CheckBox Content="CPU" IsChecked="{Binding cpu}" Foreground="White" Margin="0,0,20,0"/>
                         <CheckBox Content="CUDA" IsChecked="{Binding cuda}" Foreground="White" Margin="0,0,20,0"/>
                         <CheckBox Content="OPENCL" IsChecked="{Binding opencl}" Foreground="White"/>
                     </StackPanel>
 
-                    <TextBlock Text="SPENDENLEVEL (%)" Style="{StaticResource HeaderLabel}"/>
+                    <TextBlock Text="DONATE LEVEL (%)" Style="{StaticResource HeaderLabel}"/>
                     <Slider Minimum="1" Maximum="100" Value="{Binding donate}" TickPlacement="BottomRight" TickFrequency="1"/>
                 </StackPanel>
             </Expander>
@@ -99,7 +93,7 @@
             <!-- Logs Expander -->
             <Expander Header="LOGS" Foreground="#888888" Margin="0,10,0,0" FontWeight="Bold">
                 <Border Background="Black" Height="200" Margin="0,10,0,0">
-                    <TextBox x:Name="LogOutput" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Background="Transparent" Foreground="#00FF00" FontFamily="Consolas" FontSize="11" BorderThickness="0"/>
+                    <TextBox x:Name="LogOutput" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextWrapping="Wrap" Background="Transparent" Foreground="#00FF00" FontFamily="Consolas" FontSize="11" BorderThickness="0"/>
                 </Border>
             </Expander>
         </StackPanel>

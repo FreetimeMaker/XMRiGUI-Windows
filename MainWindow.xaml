@@ -5,43 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:XMRiGUI"
         mc:Ignorable="d"
-        Title="XMRiGUI v1.8.1" Height="650" Width="950" Background="#1E1E1E">
+        Title="XMRiGUI v1.9.0" Height="650" Width="950" MinHeight="500" MinWidth="800" Background="#1E1E1E"
+        Icon="/xmrigui.ico">
 
     <Window.Resources>
-        <Style x:Key="HeaderLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#888888"/>
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Margin" Value="0,10,0,2"/>
-        </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="Background" Value="#2D2D30"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#3F3F46"/>
-            <Setter Property="Padding" Value="5"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-        <Style x:Key="ProfileSwitch" TargetType="ToggleButton">
-            <Setter Property="Background" Value="#333333"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="30"/>
-            <Setter Property="Width" Value="60"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="border" CornerRadius="15" Background="{TemplateBinding Background}">
-                            <Ellipse x:Name="dot" Fill="White" HorizontalAlignment="Left" Margin="2" Width="26" Height="26"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4CAF50"/>
-                                <Setter TargetName="dot" Property="HorizontalAlignment" Value="Right"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Window.Resources>
 
     <Grid>
@@ -88,13 +55,13 @@
                             </Setter>
                         </Style>
                     </ListBox.ItemContainerStyle>
-                    <ListBoxItem Content="Profil 1" Tag="0"/>
-                    <ListBoxItem Content="Profil 2" Tag="1"/>
-                    <ListBoxItem Content="Profil 3" Tag="2"/>
-                    <ListBoxItem Content="Einstellungen" Tag="3" Margin="0,20,0,0"/>
+                    <ListBoxItem Content="Profile 1" Tag="0"/>
+                    <ListBoxItem Content="Profile 2" Tag="1"/>
+                    <ListBoxItem Content="Profile 3" Tag="2"/>
+                    <ListBoxItem Content="Settings" Tag="3" Margin="0,20,0,0"/>
                 </ListBox>
 
-                <TextBlock Grid.Row="2" Text="v1.8.1 (WPF Port)" Foreground="#555555" FontSize="10" Margin="20" HorizontalAlignment="Center"/>
+                <TextBlock Grid.Row="2" Text="XMRiGUI v1.9.0" Foreground="#555555" FontSize="10" Margin="20" HorizontalAlignment="Center"/>
             </Grid>
         </Border>
 
@@ -122,21 +89,23 @@
                 </TabItem>
 
                 <TabItem> <!-- Global Settings -->
-                    <StackPanel>
-                        <TextBlock Text="EINSTELLUNGEN" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,30"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,0,10,0">
+                            <TextBlock Text="SETTINGS" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,30"/>
 
-                        <CheckBox Content="Mit Windows starten" Foreground="White" Margin="0,20,0,0" IsChecked="{Binding start_with_windows}"/>
-                        <CheckBox Content="Bei Minimieren in den Tray" Foreground="White" Margin="0,10,0,0" IsChecked="{Binding minimize_to_tray}"/>
-                        <CheckBox Content="Bei Schließen in den Tray" Foreground="White" Margin="0,10,0,0" IsChecked="{Binding close_to_tray}"/>
+                            <CheckBox Content="Start with Windows" Foreground="White" Margin="0,20,0,0" IsChecked="{Binding start_with_windows}"/>
+                            <CheckBox Content="Minimize to tray" Foreground="White" Margin="0,10,0,0" IsChecked="{Binding minimize_to_tray}"/>
+                            <CheckBox Content="Close to tray" Foreground="White" Margin="0,10,0,0" IsChecked="{Binding close_to_tray}"/>
 
-                        <Button Content="ALLE EINSTELLUNGEN SPEICHERN" Background="#FF6600" Foreground="White" FontWeight="Bold" Height="45" Margin="0,40,0,0" Click="SaveAll_Click" BorderThickness="0">
-                            <Button.Resources>
-                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style>
-                            </Button.Resources>
-                        </Button>
+                            <Button Content="SAVE ALL SETTINGS" Background="#FF6600" Foreground="White" FontWeight="Bold" Height="45" Margin="0,40,0,0" Click="SaveAll_Click" BorderThickness="0">
+                                <Button.Resources>
+                                    <Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style>
+                                </Button.Resources>
+                            </Button>
 
-                        <TextBlock Text="Miner-Version (Integriert): 1.8.1" Foreground="#555555" Margin="0,20,0,0" FontSize="12"/>
-                    </StackPanel>
+                            <TextBlock Text="Miner Version (Integrated): 2.26.0" Foreground="#555555" Margin="0,20,0,0" FontSize="12"/>
+                        </StackPanel>
+                    </ScrollViewer>
                 </TabItem>
             </TabControl>
         </Grid>

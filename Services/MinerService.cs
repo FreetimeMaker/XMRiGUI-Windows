@@ -32,7 +32,7 @@ namespace XMRiGUI.Services
             string xmrigPath = GetBundledXmrigPath();
             if (!File.Exists(xmrigPath))
             {
-                OutputReceived?.Invoke(profileIndex, "Fehler: Integrierter Miner nicht gefunden unter " + xmrigPath);
+                OutputReceived?.Invoke(profileIndex, "Error: Integrated miner not found at " + xmrigPath);
                 return;
             }
 
@@ -75,7 +75,7 @@ namespace XMRiGUI.Services
             }
             catch (Exception ex)
             {
-                OutputReceived?.Invoke(profileIndex, "Startfehler: " + ex.Message);
+                OutputReceived?.Invoke(profileIndex, "Start error: " + ex.Message);
             }
         }
 

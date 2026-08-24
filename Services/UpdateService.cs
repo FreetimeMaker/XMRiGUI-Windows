@@ -8,8 +8,8 @@ namespace XMRiGUI.Services
 {
     public class UpdateService
     {
-        public const string IntegratedVersion = "1.8.1";
-        private const string RepoUrl = "https://api.github.com/repos/FreetimeMaker/XMRiGUI/releases/latest";
+        public const string IntegratedVersion = "1.9.0";
+        private const string RepoUrl = "https://api.github.com/repos/FreetimeMaker/XMRiGUI-Windows/releases/latest";
 
         public async Task<string> CheckForUpdateAsync()
         {
@@ -18,7 +18,7 @@ namespace XMRiGUI.Services
                 using (var client = new HttpClient())
                 {
                     // GitHub API requires a User-Agent
-                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("XMRiGUI-WPF", IntegratedVersion));
+                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("XMRiGUI", IntegratedVersion));
 
                     var response = await client.GetStringAsync(RepoUrl);
                     var json = JObject.Parse(response);
