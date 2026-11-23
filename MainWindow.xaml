@@ -3,6 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="XMRiGUI v2.0.0" Height="720" Width="800" MinHeight="460" MinWidth="550" Icon="/xmrigui.ico">
     <DockPanel Margin="8">
+        <TextBlock x:Name="MinerSetupStatus" DockPanel.Dock="Top" Visibility="Collapsed"
+                   TextWrapping="Wrap" Margin="4,0,4,8"/>
         <TabControl x:Name="MainTabs"/>
     </DockPanel>
 </Window>

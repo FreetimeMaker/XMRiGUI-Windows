@@ -12,7 +12,7 @@ This is the native **WPF (C#, .NET 8)** Windows counterpart to [XMRiGUI-Linux](h
 - Optional automatic restart after unexpected exit, with delays of 2, 4, 8, 16 and 32 seconds. Manual stop cancels pending retries. Running XMRig instances handle their own reconnects.
 - Binary path and reported version, Huge Pages, MSR and permission messages. The latest 500 log lines are retained. Export redaction is best-effort; review the file before sharing it.
 - Tray controls and one instance per Windows user session. Settings are stored as plain JSON in `%APPDATA%\XMRiGUI\xmrigui.json`.
-- The bundled `xmrig.exe` is found in the application root or `miner/`. Review pool and wallet settings before starting; opening the Windows app without arguments never starts mining.
+- At startup, XMRiGUI checks for `xmrig.exe` in the application root, `miner/`, and `%LOCALAPPDATA%\XMRiGUI\miner\`. If it is missing, XMRiGUI downloads the latest stable Windows x64 release from the official `xmrig/xmrig` GitHub repository, verifies the ZIP's SHA-256 digest and installs `xmrig.exe` into that user-local folder without administrator rights. Existing miners are not updated. Review pool and wallet settings before starting; opening the app without arguments never starts mining.
 
 ## Installation
 
@@ -20,7 +20,7 @@ This is the native **WPF (C#, .NET 8)** Windows counterpart to [XMRiGUI-Linux](h
 
 1. Download the latest `XMRiGUI.exe` or installer from the [Releases](https://github.com/FreetimeMaker/XMRiGUI-Windows/releases) page.
 2. Extract or install to a folder of your choice.
-3. Ensure `xmrig.exe` is present in the `miner/` folder or the root directory.
+3. If `xmrig.exe` is not already available, the first launch needs internet access to download it.
 4. Run `XMRiGUI.exe`.
 
 > [!WARNING]

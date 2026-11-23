@@ -33,9 +33,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "Releases\XMRiGUI.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; Include assets
 Source: "xmrigui.ico"; DestDir: "{app}"; Flags: ignoreversion
-; Include Miners
-Source: "xmrig.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "WinRing0x64.sys"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\XMRiGUI"; Filename: "{app}\XMRiGUI.exe"; IconFilename: "{app}\xmrigui.ico"

@@ -215,6 +215,12 @@ namespace XMRiGUI
             ChartTime.Text = $"Elapsed minutes: {start / 60:0.00}–{end / 60:0.00}";
         }
 
+        public void SetMinerPath(string binary)
+        {
+            _binary = binary;
+            RefreshDiagnostics();
+        }
+
         private void RefreshDiagnostics() => DiagnosticsText.Text = "Binary: " + _binary + Environment.NewLine +
             (_diagnostics.Count == 0 ? "Version / Huge Pages / permissions: not reported yet" : string.Join(Environment.NewLine, _diagnostics));
 

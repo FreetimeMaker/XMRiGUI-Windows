@@ -53,6 +53,7 @@ namespace XMRiGUI
             }
             MainWindow = window;
             if (command != 3) window.Show();
+            window.CheckMinerOnStartup();
             window.HandleCommand(command);
             _ = ListenAsync(name, window, _shutdown.Token);
         }

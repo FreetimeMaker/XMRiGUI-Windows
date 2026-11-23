@@ -16,16 +16,20 @@ namespace XMRiGUI.Services
         public event Action<int, string> OutputReceived;
         public event Action<int, int> Exited;
 
-        public string GetBundledXmrigPath()
+        public static string InstalledXmrigPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "XMRiGUI", "miner", "xmrig.exe");
+
+        public string GetXmrigPath()
         {
             var root = Path.Combine(AppContext.BaseDirectory, "xmrig.exe");
-            return File.Exists(root) ? root : Path.Combine(AppContext.BaseDirectory, "miner", "xmrig.exe");
+            var bundled = Path.Combine(AppContext.BaseDirectory, "miner", "xmrig.exe");
+            return File.Exists(root) ? root : File.Exists(bundled) ? bundled : InstalledXmrigPath;
         }
 
         public void Start(int index, ProfileConfig config, IReadOnlyList<string> extra)
         {
             if (_processes.ContainsKey(index)) throw new InvalidOperationException("The previous miner is still stopping.");
-            var path = GetBundledXmrigPath();
+            var path = GetXmrigPath();
             if (!File.Exists(path)) throw new FileNotFoundException("Miner not found: " + path);
             var info = new ProcessStartInfo(path)
             {

@@ -3,6 +3,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -26,6 +29,10 @@ namespace XMRiGUI
         private readonly Forms.NotifyIcon _tray;
         private readonly DispatcherTimer _statsTimer;
         private bool _quitting;
+        private readonly CancellationTokenSource _minerSetupCancellation = new();
+        private Task<bool> _minerSetup;
+        private readonly int[] _startGeneration = new int[3];
+        private readonly bool[] _waitingForMiner = new bool[3];
 
         public MainWindow()
         {
@@ -35,7 +42,7 @@ namespace XMRiGUI
             {
                 int index = i;
                 var view = _profiles[i] = new ProfileView();
-                view.LoadProfile(_config.profiles[i], _miner.GetBundledXmrigPath());
+                view.LoadProfile(_config.profiles[i], _miner.GetXmrigPath());
                 view.MineRequested += active => { if (active) Start(index); else Stop(index); };
                 view.SaveRequested += () => { if (view.TryApply(out _)) Persist(); };
                 view.RenameRequested += () => Rename(index);
@@ -68,7 +75,7 @@ namespace XMRiGUI
                 int index = i;
                 menu.Items.Add("Toggle " + _profiles[i].Config.name, null, (_, _) => Dispatcher.Invoke(() =>
                 {
-                    if (_active[index]) Stop(index); else Start(index);
+                    if (_active[index] || _waitingForMiner[index]) Stop(index); else Start(index);
                 }));
             }
             menu.Items.Add(new Forms.ToolStripSeparator());
@@ -76,6 +83,46 @@ namespace XMRiGUI
             menu.Items.Add("Quit", null, (_, _) => Dispatcher.Invoke(() => { _quitting = true; Close(); }));
             _tray = new Forms.NotifyIcon { Icon = SystemIcons.Application, ContextMenuStrip = menu, Text = "XMRiGUI", Visible = true };
             _tray.DoubleClick += (_, _) => Dispatcher.Invoke(ShowWindow);
+        }
+
+        public void CheckMinerOnStartup() => _ = EnsureMinerAsync();
+
+        private Task<bool> EnsureMinerAsync()
+        {
+            var path = _miner.GetXmrigPath();
+            if (File.Exists(path))
+            {
+                foreach (var profile in _profiles) profile.SetMinerPath(path);
+                if (_minerSetup?.IsCompletedSuccessfully == true && !_minerSetup.Result)
+                    MinerSetupStatus.Visibility = Visibility.Collapsed;
+                return Task.FromResult(true);
+            }
+            if (_minerSetup == null || _minerSetup.IsCompleted)
+                _minerSetup = InstallMinerAsync();
+            return _minerSetup;
+        }
+
+        private async Task<bool> InstallMinerAsync()
+        {
+            MinerSetupStatus.Text = "XMRig not found. Downloading the latest Windows x64 release from GitHub…";
+            MinerSetupStatus.Visibility = Visibility.Visible;
+            var cancellation = _minerSetupCancellation.Token;
+            try
+            {
+                var version = await MinerInstaller.InstallLatestAsync(MinerService.InstalledXmrigPath, cancellation);
+                if (cancellation.IsCancellationRequested) return false;
+                foreach (var profile in _profiles) profile.SetMinerPath(_miner.GetXmrigPath());
+                MinerSetupStatus.Text = $"XMRig {version} installed.";
+                return true;
+            }
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { return false; }
+            catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or UnauthorizedAccessException
+                or OperationCanceledException or System.Text.Json.JsonException or System.Collections.Generic.KeyNotFoundException
+                or InvalidOperationException or FormatException)
+            {
+                MinerSetupStatus.Text = $"Could not install XMRig: {ex.Message} Try Mine again or restart XMRiGUI to retry.";
+                return false;
+            }
         }
 
         public void HandleCommand(byte command)
@@ -102,17 +149,29 @@ namespace XMRiGUI
             }
         }
 
-        private void Start(int index)
+        private async void Start(int index)
         {
-            if (_active[index]) return;
+            if (_active[index] || _waitingForMiner[index]) return;
             var view = _profiles[index];
             if (!view.TryApply(out var args) || !Persist())
             {
                 view.SetStatus(false, "Status: Check your settings.");
                 return;
             }
+            var config = view.Config.Copy();
+            var generation = ++_startGeneration[index];
+            _waitingForMiner[index] = true;
+            if (!File.Exists(_miner.GetXmrigPath())) view.SetStatus(true, "Waiting for XMRig installation…");
+            bool ready = await EnsureMinerAsync();
+            if (generation != _startGeneration[index]) return;
+            _waitingForMiner[index] = false;
+            if (!ready)
+            {
+                view.SetStatus(false, "XMRig is not installed.");
+                return;
+            }
             _arguments[index] = args;
-            _launchConfigs[index] = view.Config.Copy();
+            _launchConfigs[index] = config;
             _attempts[index] = 0;
             _active[index] = true;
             view.BeginSession();
@@ -153,6 +212,8 @@ namespace XMRiGUI
         private bool Stop(int index)
         {
             _restarts[index].Stop();
+            _startGeneration[index]++;
+            _waitingForMiner[index] = false;
             try { _miner.Stop(index); }
             catch (System.ComponentModel.Win32Exception ex)
             {
@@ -185,7 +246,7 @@ namespace XMRiGUI
             config.enabled = false;
             config.name += " (copy)";
             _config.profiles[target] = config;
-            _profiles[target].LoadProfile(config, _miner.GetBundledXmrigPath());
+            _profiles[target].LoadProfile(config, _miner.GetXmrigPath());
             UpdateName(target);
             Persist();
         }
@@ -238,6 +299,8 @@ namespace XMRiGUI
                 }
                 else
                 {
+                    _minerSetupCancellation.Cancel();
+                    _minerSetupCancellation.Dispose();
                     _statsTimer.Stop();
                     _tray.ContextMenuStrip.Dispose();
                     _tray.Dispose();
