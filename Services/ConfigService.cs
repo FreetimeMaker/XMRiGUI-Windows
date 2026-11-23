@@ -20,15 +20,20 @@ namespace XMRiGUI.Services
                 return new XmriguiConfig();
             }
 
-            try
+            string json = File.ReadAllText(filePath);
+            var config = JsonConvert.DeserializeObject<XmriguiConfig>(json, new JsonSerializerSettings
             {
-                string json = File.ReadAllText(filePath);
-                return JsonConvert.DeserializeObject<XmriguiConfig>(json);
-            }
-            catch
+                ObjectCreationHandling = ObjectCreationHandling.Replace
+            }) ?? throw new InvalidDataException("The settings file is empty.");
+            config.profiles ??= new System.Collections.Generic.List<ProfileConfig>();
+            // Older versions appended deserialized entries to the defaults. Keep any extra entries on save.
+            for (int i = 0; i < 3; i++)
             {
-                return new XmriguiConfig();
+                var fallback = new ProfileConfig { name = $"Profile {i + 1}" };
+                if (i == config.profiles.Count) config.profiles.Add(fallback);
+                else config.profiles[i] ??= fallback;
             }
+            return config;
         }
 
         public void SaveConfig(XmriguiConfig config)

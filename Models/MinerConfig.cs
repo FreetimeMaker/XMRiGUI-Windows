@@ -30,5 +30,10 @@ namespace XMRiGUI.Models
         public bool cuda { get; set; } = false;
         public bool opencl { get; set; } = false;
         public bool tls { get; set; } = true;
+        public bool auto_restart { get; set; }
+        public bool default_args { get; set; }
+        public string args { get; set; } = "";
+
+        public ProfileConfig Copy() => (ProfileConfig)MemberwiseClone();
     }
 }

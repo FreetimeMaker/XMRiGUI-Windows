@@ -1,31 +1,23 @@
 # XMRiGUI (Windows Native)
 
-XMRiGUI is a free and open-source graphical user interface for the [XMRig](https://github.com/xmrig/xmrig) miner, specifically optimized for **Windows**. 
+XMRiGUI is a free and open-source graphical user interface for the [XMRig](https://github.com/xmrig/xmrig) miner, specifically optimized for **Windows**.
 
-This version is a native **WPF (C#)** port of the original Python/GTK3 application by **FreetimeMaker**, designed to provide a seamless, high-performance mining experience without the need for Python or complex GTK dependencies.
-
-![Preview of XMRiGUI](preview.png)
+This is the native **WPF (C#, .NET 8)** Windows counterpart to [XMRiGUI-Linux](https://github.com/FreetimeMaker/XMRiGUI-Linux). It does not require Python or Qt.
 
 ## Key Features
 
-### Modern Windows UI
-*   **Native WPF Interface**: Built with C# and .NET Framework 4.8 for maximum performance and stability on Windows.
-*   **Monero Dark Theme**: A sleek, Monero-inspired design with orange highlights and a sidebar-based navigation.
-*   **System Tray Integration**: Minimize or close the app to the system tray to keep mining unhindered in the background. Uses a native `.ico` icon for the tray and window.
-
-### v1.0.0 Mining Logic
-*   **Multi-Profile Support**: Manage and run up to **3 independent mining profiles** simultaneously.
-*   **Dynamic Argument Generation**: Configures `xmrig` on-the-fly via command-line parameters, ensuring compatibility and flexibility.
-*   **Bundled Miner Support**: Automatically detects `xmrig.exe` in the application root or `miner/` subfolder.
-*   **Real-time Telemetry**: Live Hashrate (H/s), Shares (Accepted/Rejected), and console log output per profile.
-
-### Intelligence & Updates
-*   **Automatic Update Check**: Automatically checks GitHub for the latest XMRiGUI releases and miner updates upon startup.
-*   **Persistence**: Securely saves all configurations in `%APPDATA%\XMRiGUI\xmrigui.json`.
+- Three independent mining profiles in tabs. Rename a profile or copy its settings to another slot after confirmation; copying stops the destination and does not start it again.
+- Field-level validation before starting. Use `0` threads for automatic selection and a donation level from `0` to `100` (XMRig may impose its own minimum).
+- Live hashrate and shares, a bounded time-based chart, session runtime, sample-average hashrate, and rejected-share percentage.
+- Optional automatic restart after unexpected exit, with delays of 2, 4, 8, 16 and 32 seconds. Manual stop cancels pending retries. Running XMRig instances handle their own reconnects.
+- Binary path and reported version, Huge Pages, MSR and permission messages. The latest 500 log lines are retained. Export redaction is best-effort; review the file before sharing it.
+- Tray controls and one instance per Windows user session. Settings are stored as plain JSON in `%APPDATA%\XMRiGUI\xmrigui.json`.
+- The bundled `xmrig.exe` is found in the application root or `miner/`. Review pool and wallet settings before starting; opening the Windows app without arguments never starts mining.
 
 ## Installation
 
 ### Binary Release
+
 1. Download the latest `XMRiGUI.exe` or installer from the [Releases](https://github.com/FreetimeMaker/XMRiGUI-Windows/releases) page.
 2. Extract or install to a folder of your choice.
 3. Ensure `xmrig.exe` is present in the `miner/` folder or the root directory.
@@ -34,8 +26,8 @@ This version is a native **WPF (C#)** port of the original Python/GTK3 applicati
 > [!WARNING]
 > **Security & Antivirus**
 >
-> *   **SmartScreen**: Windows may show a "Protected your PC" warning. Click **"More Info"** -> **"Run Anyway"**. This is common for unsigned open-source tools.
-> *   **Antivirus/Windows Defender**: Mining software is frequently flagged as a PUA (Potentially Unwanted Application). You may need to add an exclusion for the `XMRiGUI` folder and `xmrig.exe`.
+> - **SmartScreen**: Windows may show a "Protected your PC" warning. Click **"More Info"** -> **"Run Anyway"**. This is common for unsigned open-source tools.
+> - **Antivirus/Windows Defender**: Mining software is frequently flagged as a PUA (Potentially Unwanted Application). You may need to add an exclusion for the `XMRiGUI` folder and `xmrig.exe`.
 
 ## Build from Source
 
@@ -45,23 +37,32 @@ To build XMRiGUI yourself, you will need **Visual Studio 2022** (or later) with 
    ```bash
    git clone https://github.com/FreetimeMaker/XMRiGUI-Windows.git
    ```
-2. Open `XMRiGUI.sln` in Visual Studio.
+2. Open `XMRiGUI.slnx` in a Visual Studio version that supports it, or run `dotnet build XMRiGUI.csproj` on Windows.
 3. Restore NuGet packages (specifically `Newtonsoft.Json`).
 4. Set the configuration to **Release**.
 5. Build the solution. The output will be in `bin/Release/`.
 
 ## Command Line Options
-*   `start`: Start mining all active profiles immediately.
-*   `stop`: Stop all active mining processes.
+
+- `start`: Attempt to start all three profiles after validating each one.
+- `stop`: Stop all miners launched by this application and cancel pending retries.
+- `--open` or no arguments: Show the window.
+- `--close`: Hide the window without stopping miners.
+
+On an interactive Windows desktop, run `powershell -NoProfile -File tests/Smoke-Wpf.ps1` after a debug build to check startup and single-instance hide/reopen without starting a miner.
 
 ## Contribute
 
 ### Support the Project
+
 If you find this tool useful, consider supporting development:
-*   **Monero (XMR)**: `49szz88CqMWGgyDxp7VqvBS62pGLQcV4YPSBHcLwtxAXLz1Wngf8vW6is4w13Au7C2RovrTiJQaGDV5VBhFnyMBsM44Pn2P`
+
+- **Monero (XMR)**: `49szz88CqMWGgyDxp7VqvBS62pGLQcV4YPSBHcLwtxAXLz1Wngf8vW6is4w13Au7C2RovrTiJQaGDV5VBhFnyMBsM44Pn2P`
 
 ### Feedback
+
 Bug reports and pull requests are welcome on [GitHub](https://github.com/FreetimeMaker/XMRiGUI).
 
 ---
+
 **Disclaimer**: Cryptocurrency mining is hardware-intensive. Ensure your system has adequate cooling. Use this software at your own risk. The developers are not responsible for any hardware damage or lost revenue.

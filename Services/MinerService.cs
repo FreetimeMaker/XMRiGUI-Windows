@@ -4,109 +4,101 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using XMRiGUI.Models;
 
 namespace XMRiGUI.Services
 {
     public class MinerService
     {
-        private readonly Dictionary<int, Process> _processes = new Dictionary<int, Process>();
+        private readonly Dictionary<int, Process> _processes = new();
+        private readonly Dispatcher _dispatcher = Dispatcher.CurrentDispatcher;
         public event Action<int, string> OutputReceived;
-        public event Action<int, bool> StatusChanged;
-
-        public bool IsRunning(int profileIndex) => _processes.ContainsKey(profileIndex) && !_processes[profileIndex].HasExited;
+        public event Action<int, int> Exited;
 
         public string GetBundledXmrigPath()
         {
-            // Erst im Hauptverzeichnis suchen, dann im miner/ Unterordner
-            string rootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "xmrig.exe");
-            if (File.Exists(rootPath)) return rootPath;
-
-            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "miner", "xmrig.exe");
+            var root = Path.Combine(AppContext.BaseDirectory, "xmrig.exe");
+            return File.Exists(root) ? root : Path.Combine(AppContext.BaseDirectory, "miner", "xmrig.exe");
         }
 
-        public void Start(int profileIndex, ProfileConfig config)
+        public void Start(int index, ProfileConfig config, IReadOnlyList<string> extra)
         {
-            if (IsRunning(profileIndex)) return;
-
-            string xmrigPath = GetBundledXmrigPath();
-            if (!File.Exists(xmrigPath))
+            if (_processes.ContainsKey(index)) throw new InvalidOperationException("The previous miner is still stopping.");
+            var path = GetBundledXmrigPath();
+            if (!File.Exists(path)) throw new FileNotFoundException("Miner not found: " + path);
+            var info = new ProcessStartInfo(path)
             {
-                OutputReceived?.Invoke(profileIndex, "Error: Integrated miner not found at " + xmrigPath);
-                return;
-            }
-
-            string arguments = GenerateArguments(config);
-            string workingDir = Path.GetDirectoryName(xmrigPath);
-
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = xmrigPath,
-                    Arguments = arguments,
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = Encoding.UTF8
-                }
+                WorkingDirectory = Path.GetDirectoryName(path), UseShellExecute = false,
+                CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8, StandardErrorEncoding = Encoding.UTF8
             };
+            var args = info.ArgumentList;
+            args.Add("--no-color");
+            if (!config.default_args)
+            {
+                args.Add("--url=" + config.pool.Trim());
+                args.Add("--user=" + config.wallet);
+                args.Add("--pass=" + config.password);
+                args.Add("--donate-level=" + config.donate);
+                if (!string.IsNullOrEmpty(config.algo)) args.Add("--algo=" + config.algo);
+                if (config.threads > 0)
+                {
+                    args.Add("--threads=" + config.threads);
+                    args.Add("--randomx-init=" + config.threads);
+                }
+                if (!config.cpu) args.Add("--no-cpu");
+                if (config.cuda) args.Add("--cuda");
+                if (config.opencl) args.Add("--opencl");
+                if (config.tls) args.Add("--tls");
+            }
+            foreach (var arg in extra) args.Add(arg);
 
-            process.OutputDataReceived += (s, e) => { if (e.Data != null) OutputReceived?.Invoke(profileIndex, e.Data); };
-            process.ErrorDataReceived += (s, e) => { if (e.Data != null) OutputReceived?.Invoke(profileIndex, "ERROR: " + e.Data); };
-
+            var process = new Process { StartInfo = info };
             try
             {
                 process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+            }
+            catch
+            {
+                process.Dispose();
+                throw;
+            }
+            _processes.Add(index, process);
+            process.OutputDataReceived += (_, e) => Publish(e.Data);
+            process.ErrorDataReceived += (_, e) => Publish(e.Data);
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            _ = ObserveExit(index, process);
 
-                _processes[profileIndex] = process;
-                StatusChanged?.Invoke(profileIndex, true);
-
-                Task.Run(() =>
+            void Publish(string line)
+            {
+                if (line == null) return;
+                _dispatcher.InvokeAsync(() =>
                 {
-                    process.WaitForExit();
-                    _processes.Remove(profileIndex);
-                    StatusChanged?.Invoke(profileIndex, false);
+                    if (_processes.GetValueOrDefault(index) == process) OutputReceived?.Invoke(index, line);
                 });
             }
-            catch (Exception ex)
-            {
-                OutputReceived?.Invoke(profileIndex, "Start error: " + ex.Message);
-            }
         }
 
-        public void Stop(int profileIndex)
+        private async Task ObserveExit(int index, Process process)
         {
-            if (_processes.TryGetValue(profileIndex, out var process))
+            await process.WaitForExitAsync().ConfigureAwait(false);
+            await _dispatcher.InvokeAsync(() =>
             {
-                try { process.Kill(); } catch { }
-            }
+                if (_processes.GetValueOrDefault(index) != process) return;
+                _processes.Remove(index);
+                Exited?.Invoke(index, process.ExitCode);
+            });
+            process.Dispose();
         }
 
-        private string GenerateArguments(ProfileConfig config)
+        public void Stop(int index)
         {
-            var args = new List<string>();
-            args.Add("--url=" + config.pool);
-            args.Add("--user=" + config.wallet);
-            args.Add("--pass=" + config.password);
-            args.Add("--donate-level=" + config.donate);
-
-            if (!string.IsNullOrEmpty(config.algo))
-                args.Add("--algo=" + config.algo);
-
-            if (config.threads > 0)
-                args.Add("--threads=" + config.threads);
-
-            if (!config.cpu) args.Add("--no-cpu");
-            if (config.cuda) args.Add("--cuda");
-            if (config.opencl) args.Add("--opencl");
-            if (config.tls) args.Add("--tls");
-
-            return string.Join(" ", args);
+            if (!_processes.TryGetValue(index, out var process)) return;
+            try { process.Kill(); }
+            catch (InvalidOperationException) when (process.HasExited) { }
+            _processes.Remove(index);
         }
     }
 }

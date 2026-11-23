@@ -1,100 +1,79 @@
 <UserControl x:Class="XMRiGUI.ProfileView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="600">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Resources>
+        <Style TargetType="TextBox" BasedOn="{x:Null}">
+            <Setter Property="Padding" Value="4,2"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="10,3"/>
+        </Style>
+        <Style x:Key="Field" TargetType="DockPanel">
+            <Setter Property="Margin" Value="0,3"/>
+        </Style>
+        <Style x:Key="Caption" TargetType="TextBlock">
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
     </UserControl.Resources>
-
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="0,0,10,0">
-            <!-- Header with Switch -->
-            <Grid Margin="0,0,0,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="{Binding name}" Foreground="White" FontSize="28" FontWeight="Bold" TextWrapping="Wrap"/>
-                    <WrapPanel Margin="0,5,0,0">
-                        <TextBlock x:Name="StatusText" Text="STOPPED" Foreground="Red" FontWeight="Bold" Margin="0,0,15,0"/>
-                        <TextBlock x:Name="HashrateText" Text="0.00 H/s" Foreground="#FF6600" FontWeight="Bold"/>
+        <StackPanel Margin="20">
+            <DockPanel LastChildFill="False" Margin="0,0,0,12">
+                <Image Source="/xmrigui.ico" Width="88" Height="88" Margin="0,0,12,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="XMRiGUI" FontSize="24" FontWeight="Bold"/>
+                    <TextBlock Text="made by Freetime Maker"/>
+                    <TextBlock><Hyperlink Click="Source_Click">Source code</Hyperlink></TextBlock>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center">
+                    <CheckBox x:Name="MineSwitch" Content="Mine" Click="Mine_Click"/>
+                    <TextBlock x:Name="StatusText" Text="Status: Stopped." MaxWidth="230" TextWrapping="Wrap" Margin="0,6"/>
+                    <TextBlock x:Name="InfoText"/>
+                </StackPanel>
+            </DockPanel>
+            <UniformGrid Columns="2" Margin="0,0,0,8">
+                <Button Content="Rename profile" Click="Rename_Click" Margin="0,0,4,0"/>
+                <Button Content="Duplicate profile…" Click="Duplicate_Click" Margin="4,0,0,0"/>
+            </UniformGrid>
+            <DockPanel Style="{StaticResource Field}"><TextBlock Text="Pool:" Style="{StaticResource Caption}"/><TextBox x:Name="Pool" AutomationProperties.Name="Pool"/></DockPanel>
+            <DockPanel Style="{StaticResource Field}"><TextBlock Text="User / wallet:" Style="{StaticResource Caption}"/><TextBox x:Name="Wallet" AutomationProperties.Name="User or wallet"/></DockPanel>
+            <DockPanel Style="{StaticResource Field}"><TextBlock Text="Password:" Style="{StaticResource Caption}"/><TextBox x:Name="Password" AutomationProperties.Name="Password"/></DockPanel>
+            <DockPanel Style="{StaticResource Field}"><TextBlock Text="Donate (%):" Style="{StaticResource Caption}"/><TextBox x:Name="Donate" AutomationProperties.Name="Donate percent"/></DockPanel>
+            <DockPanel Style="{StaticResource Field}"><TextBlock Text="Threads (0 = auto):" Style="{StaticResource Caption}"/><TextBox x:Name="Threads" AutomationProperties.Name="Threads"/></DockPanel>
+            <Button Content="Save" Click="Save_Click" HorizontalAlignment="Right" Margin="0,4,0,8"/>
+            <Expander x:Name="Advanced" Header="Advanced options" Margin="0,0,0,12">
+                <StackPanel Margin="12,8,0,0">
+                    <WrapPanel>
+                        <CheckBox Content="NVIDIA GPU" IsChecked="{Binding cuda}" Margin="0,0,12,4"/>
+                        <CheckBox Content="AMD GPU" IsChecked="{Binding opencl}" Margin="0,0,12,4"/>
+                        <CheckBox Content="CPU" IsChecked="{Binding cpu}" Margin="0,0,12,4"/>
+                        <CheckBox Content="TLS" IsChecked="{Binding tls}" Margin="0,0,12,4"/>
                     </WrapPanel>
-                </StackPanel>
-                <ToggleButton Grid.Column="1" x:Name="MinerSwitch" Style="{StaticResource ProfileSwitch}" Click="MinerSwitch_Click"/>
-            </Grid>
-
-            <!-- Basic Settings -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,0">
-                    <TextBlock Text="POOL" Style="{StaticResource HeaderLabel}"/>
-                    <TextBox Text="{Binding pool}"/>
-                </StackPanel>
-
-                <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,0">
-                    <TextBlock Text="PASSWORD" Style="{StaticResource HeaderLabel}"/>
-                    <TextBox Text="{Binding password}"/>
-                </StackPanel>
-
-                <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
-                    <TextBlock Text="WALLET" Style="{StaticResource HeaderLabel}"/>
-                    <TextBox Text="{Binding wallet}"/>
-                </StackPanel>
-            </Grid>
-
-            <!-- Advanced Options Expander -->
-            <Expander Header="ADVANCED OPTIONS" Foreground="#FF6600" Margin="0,20,0,0" FontWeight="Bold">
-                <StackPanel Margin="10,10,0,0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="ALGORITHM" Style="{StaticResource HeaderLabel}"/>
-                            <ComboBox x:Name="AlgoCombo" SelectedValue="{Binding algo}" SelectedValuePath="Content" Background="#2D2D30" Foreground="White" BorderBrush="#3F3F46">
-                                <ComboBoxItem Content="rx/0"/>
-                                <ComboBoxItem Content="ghostrider"/>
-                                <ComboBoxItem Content="randomx"/>
-                                <ComboBoxItem Content="cn/r"/>
-                            </ComboBox>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                            <TextBlock Text="THREADS" Style="{StaticResource HeaderLabel}"/>
-                            <TextBox Text="{Binding threads}"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <TextBlock Text="HARDWARE ACCELERATION" Style="{StaticResource HeaderLabel}"/>
-                    <StackPanel Orientation="Horizontal">
-                        <CheckBox Content="CPU" IsChecked="{Binding cpu}" Foreground="White" Margin="0,0,20,0"/>
-                        <CheckBox Content="CUDA" IsChecked="{Binding cuda}" Foreground="White" Margin="0,0,20,0"/>
-                        <CheckBox Content="OPENCL" IsChecked="{Binding opencl}" Foreground="White"/>
-                    </StackPanel>
-
-                    <TextBlock Text="DONATE LEVEL (%)" Style="{StaticResource HeaderLabel}"/>
-                    <Slider Minimum="1" Maximum="100" Value="{Binding donate}" TickPlacement="BottomRight" TickFrequency="1"/>
+                    <CheckBox Content="Disable default arguments" IsChecked="{Binding default_args}" Margin="0,0,0,4"/>
+                    <DockPanel Style="{StaticResource Field}"><TextBlock Text="Coin / algorithm:" Style="{StaticResource Caption}"/><ComboBox x:Name="Coin" SelectedValuePath="Key" DisplayMemberPath="Value"/></DockPanel>
+                    <DockPanel Style="{StaticResource Field}"><TextBlock Text="Additional args:" Style="{StaticResource Caption}"/><TextBox x:Name="Arguments" AutomationProperties.Name="Additional arguments"/></DockPanel>
+                    <CheckBox Content="Restart after unexpected exit (maximum 5 attempts)" IsChecked="{Binding auto_restart}" Margin="0,4"/>
+                    <Button Content="Save" Click="Save_Click" HorizontalAlignment="Right"/>
                 </StackPanel>
             </Expander>
-
-            <!-- Logs Expander -->
-            <Expander Header="LOGS" Foreground="#888888" Margin="0,10,0,0" FontWeight="Bold">
-                <Border Background="Black" Height="200" Margin="0,10,0,0">
-                    <TextBox x:Name="LogOutput" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextWrapping="Wrap" Background="Transparent" Foreground="#00FF00" FontFamily="Consolas" FontSize="11" BorderThickness="0"/>
-                </Border>
+            <TextBlock x:Name="Errors" Foreground="Firebrick" TextWrapping="Wrap"/>
+            <TextBlock x:Name="ChartScale" Text="Hashrate (H/s)"/>
+            <Border BorderBrush="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" BorderThickness="1">
+                <Canvas x:Name="Chart" Height="110" ClipToBounds="True" SizeChanged="Chart_SizeChanged">
+                    <Polyline x:Name="Trace" Stroke="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" StrokeThickness="2"/>
+                </Canvas>
+            </Border>
+            <TextBlock x:Name="ChartTime" Text="Elapsed minutes" HorizontalAlignment="Right"/>
+            <TextBlock x:Name="SessionText" Margin="0,5,0,8" TextWrapping="Wrap"/>
+            <GroupBox Header="Diagnostics" Margin="0,0,0,8">
+                <StackPanel Margin="6">
+                    <TextBlock x:Name="DiagnosticsText" TextWrapping="Wrap"/>
+                    <Button Content="Export redacted log…" Click="Export_Click" HorizontalAlignment="Left" Margin="0,5,0,0"/>
+                </StackPanel>
+            </GroupBox>
+            <Expander Header="Miner Output (Live)">
+                <TextBox x:Name="LogOutput" IsReadOnly="True" Height="150" VerticalScrollBarVisibility="Auto"
+                         TextWrapping="Wrap" FontFamily="Consolas" Margin="0,5,0,0"/>
             </Expander>
         </StackPanel>
     </ScrollViewer>
