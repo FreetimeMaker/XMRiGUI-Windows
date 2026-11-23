@@ -226,7 +226,7 @@ namespace XMRiGUI
 
         private void Export_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new SaveFileDialog { FileName = "xmrigui-log.txt", Filter = "Text files (*.txt)|*.txt" };
+            var dialog = new SaveFileDialog { Title = "Export redacted log", FileName = "xmrigui-log.txt", Filter = "Text files (*.txt)|*.txt" };
             if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
             var draft = new ProfileConfig { pool = Pool.Text, wallet = Wallet.Text, password = Password.Text, args = Arguments.Text };
             try
@@ -237,7 +237,8 @@ namespace XMRiGUI
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                MessageBox.Show(ex.Message, "Export failed");
+                System.Diagnostics.Trace.TraceError("Could not export log: {0}", ex);
+                MessageBox.Show("Choose a writable location with enough free space for the log.", "Export failed");
             }
         }
 

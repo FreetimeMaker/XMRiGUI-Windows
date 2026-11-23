@@ -120,7 +120,17 @@ namespace XMRiGUI
                 or OperationCanceledException or System.Text.Json.JsonException or System.Collections.Generic.KeyNotFoundException
                 or InvalidOperationException or FormatException)
             {
-                MinerSetupStatus.Text = $"Could not install XMRig: {ex.Message} Try Mine again or restart XMRiGUI to retry.";
+                Trace.TraceError("Could not install XMRig: {0}", ex);
+                string reason = ex switch
+                {
+                    InvalidDataException => "The release data or ZIP could not be verified.",
+                    HttpRequestException { StatusCode: { } code } => $"GitHub returned HTTP {(int)code}.",
+                    HttpRequestException => "Check your connection to GitHub.",
+                    OperationCanceledException => "The download timed out.",
+                    UnauthorizedAccessException or IOException => "Check that the miner folder is writable.",
+                    _ => "GitHub returned unexpected release data."
+                };
+                MinerSetupStatus.Text = $"Could not install XMRig. {reason} Select Mine or restart XMRiGUI to retry.";
                 return false;
             }
         }
@@ -144,7 +154,8 @@ namespace XMRiGUI
             try { _storage.SaveConfig(_config); return true; }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                MessageBox.Show(this, ex.Message, "Could not save settings", MessageBoxButton.OK, MessageBoxImage.Error);
+                Trace.TraceError("Could not save settings: {0}", ex);
+                MessageBox.Show(this, "Check that the settings folder is writable and has enough free space.", "Could not save settings", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
         }
@@ -188,7 +199,14 @@ namespace XMRiGUI
             catch (Exception ex) when (ex is IOException or System.ComponentModel.Win32Exception or InvalidOperationException)
             {
                 _active[index] = false;
-                _profiles[index].SetStatus(false, "Start failed: " + ex.Message);
+                Trace.TraceError("Could not start XMRig: {0}", ex);
+                _profiles[index].SetStatus(false, ex switch
+                {
+                    FileNotFoundException => "Start failed: XMRig could not be found.",
+                    System.ComponentModel.Win32Exception error => $"Start failed: Windows could not launch XMRig (error {error.NativeErrorCode}).",
+                    InvalidOperationException => "Start failed: The previous miner may still be stopping.",
+                    _ => "Start failed: The XMRig executable could not be opened."
+                });
             }
         }
 
@@ -217,7 +235,8 @@ namespace XMRiGUI
             try { _miner.Stop(index); }
             catch (System.ComponentModel.Win32Exception ex)
             {
-                _profiles[index].SetStatus(true, "Stop failed: " + ex.Message);
+                Trace.TraceError("Could not stop XMRig: {0}", ex);
+                _profiles[index].SetStatus(true, $"Stop failed: Windows could not stop XMRig (error {ex.NativeErrorCode}).");
                 return false;
             }
             _active[index] = false;
@@ -240,7 +259,7 @@ namespace XMRiGUI
             var input = new ComboBox { ItemsSource = targets.Select(i => $"{_profiles[i].Config.name} (slot {i + 1})"), SelectedIndex = 0, MinWidth = 250 };
             if (!Prompt("Duplicate profile", "Replace target profile:", input) || input.SelectedIndex < 0) return;
             int target = targets[input.SelectedIndex];
-            if (MessageBox.Show(this, "Overwrite this profile’s settings and stop its miner?", "Replace profile", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+            if (!Prompt("Replace profile", "Overwrite this profile’s settings and stop its miner?", null, "Replace")) return;
             if (!_profiles[source].TryApply(out _) || !Stop(target)) return;
             var config = _profiles[source].Config.Copy();
             config.enabled = false;
@@ -251,20 +270,21 @@ namespace XMRiGUI
             Persist();
         }
 
-        private bool Prompt(string title, string label, Control input)
+        private bool Prompt(string title, string label, Control input, string confirm = "OK")
         {
             var panel = new StackPanel { Margin = new Thickness(16) };
             var dialog = new Window { Title = title, Owner = this, Content = panel, SizeToContent = SizeToContent.WidthAndHeight,
                 ResizeMode = ResizeMode.NoResize, ShowInTaskbar = false, WindowStartupLocation = WindowStartupLocation.CenterOwner };
             panel.Children.Add(new TextBlock { Text = label, Margin = new Thickness(0, 0, 0, 4) });
-            panel.Children.Add(input);
+            if (input != null) panel.Children.Add(input);
             var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 12, 0, 0) };
-            var ok = new Button { Content = "OK", IsDefault = true, MinWidth = 75, Margin = new Thickness(0, 0, 5, 0) };
+            var ok = new Button { Content = confirm, IsDefault = input != null, MinWidth = 75, Margin = new Thickness(0, 0, 5, 0) };
             ok.Click += (_, _) => dialog.DialogResult = true;
             buttons.Children.Add(ok);
-            buttons.Children.Add(new Button { Content = "Cancel", IsCancel = true, MinWidth = 75 });
+            var cancel = new Button { Content = "Cancel", IsCancel = true, MinWidth = 75 };
+            buttons.Children.Add(cancel);
             panel.Children.Add(buttons);
-            dialog.Loaded += (_, _) => { input.Focus(); if (input is TextBox box) box.SelectAll(); };
+            dialog.Loaded += (_, _) => { (input ?? cancel).Focus(); if (input is TextBox box) box.SelectAll(); };
             return dialog.ShowDialog() == true;
         }
 

@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <Compile Remove="tests\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

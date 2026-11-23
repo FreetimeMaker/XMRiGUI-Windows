@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
@@ -18,6 +19,9 @@ namespace XMRiGUI
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            var english = CultureInfo.GetCultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture = english;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentUICulture = english;
             base.OnStartup(e);
             using var identity = WindowsIdentity.GetCurrent();
             using var process = Process.GetCurrentProcess();
@@ -35,7 +39,8 @@ namespace XMRiGUI
                 }
                 catch (Exception ex) when (ex is IOException or TimeoutException or UnauthorizedAccessException)
                 {
-                    MessageBox.Show("Could not contact the running instance: " + ex.Message, "XMRiGUI");
+                    Trace.TraceError("Could not contact the running instance: {0}", ex);
+                    MessageBox.Show("Could not contact the running instance. Close it and try again.", "XMRiGUI");
                     Shutdown(1);
                     return;
                 }
@@ -47,7 +52,8 @@ namespace XMRiGUI
             try { window = new MainWindow(); }
             catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or Newtonsoft.Json.JsonException)
             {
-                MessageBox.Show("Could not load settings: " + ex.Message, "XMRiGUI");
+                Trace.TraceError("Could not load settings: {0}", ex);
+                MessageBox.Show("Could not load settings. Check that the settings file is readable and contains valid JSON.", "XMRiGUI");
                 Shutdown(1);
                 return;
             }
